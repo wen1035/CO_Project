@@ -1,0 +1,128 @@
+.globl	main
+.data 	
+   	
+  	 Input:	.string "請輸入數字n:\n"
+    	Output:	.string "\n程式結束 \n"
+	
+.text
+main:
+	
+	
+
+	la a0,Input          #將要輸出的字串放入a0
+	li a7,4               #a7是4為pintString
+ 	ecall
+	li a7,5                #a7是5為ReadInt,值存於a0
+	ecall
+	add  t5,a0,zero       # t5 = a0是n
+	
+	addi t6,zero, 0        #Sum最終答案，要放到 a0
+ 	jal ra, ALL
+	li a7, 1               # Load constant 1 to x17
+         add  a0,t6,zero        #Sum最終答案，要放到 a0
+	ecall                  #發一個打印整數的 SystemCall（因為 x17 中的 1）
+	la   a0,Output
+  	li a7,4	              #a7是4為pintString
+	ecall
+  	li a7,10              #結束的動作，不然會默認往下跑而整個當掉
+	ecall  
+
+ALL:
+	 # n>20
+	addi t2, zero, 20
+ 	blt t2, t5, LOOP5      # t2 < t5為True，跑 LOOP5  
+ 	
+ 	 # 10<n<=20
+ 	addi t2, zero, 10
+ 	blt t2, t5, LOOP4        # t2 < t5為True，跑 LOOP4  
+
+ 	# 1<n<=10
+ 	addi t2, zero, 1
+ 	blt t2, t5, LOOP3        # t2 < t5為True，跑 LOOP3  
+
+	# n=1
+ 	addi t2, zero, 1 
+ 	beq t2, t5, LOOP2         # t2 = t5為True，跑 LOOP5  
+			
+	# n=0
+ 	addi t2, zero, 0
+ 	beq t5, t2, LOOP1          # t2 = t5為True，跑 LOOP1  
+ 	   
+	# n不是那些範圍
+ 	addi t2, zero, 0
+	blt t5, t2, LOOP0          # t5 < t2為True，跑 LOOP0
+	
+# n不是那些範圍
+LOOP0:                    
+	addi t6,t6,-1         
+	jalr ra                    #ra 回傳位址的暫存器
+ 	                          #在被跳躍位址處回傳時取得這個回傳位址並跳回
+# n=0
+LOOP1:                     
+	addi t6,t6,1       
+	
+	jalr ra                    #ra 回傳位址的暫存器
+ 	                          #在被跳躍位址處回傳時取得這個回傳位址並跳回
+# n=1
+LOOP2:                    
+	addi t6,t6,5  
+	
+	jalr ra                       #ra 回傳位址的暫存器
+ 	                          #在被跳躍位址處回傳時取得這個回傳位址並跳回
+# 1<n<=10
+LOOP3:                
+	addi sp, sp, -8		  # 分配 8 bytes to stack
+ 	sw ra, 0(sp)		  # 將返回地址保存在 stack中
+ 	sw t5, 4(sp)		  # 將參數值保存在 stack 中
+ 	
+ 	addi t5,t5,-1
+ 	jal ra, ALL                 # f(n-1)
+ 	addi t5,t5,-1               #-1-1
+ 	jal ra, ALL                # return f(n-2)
+ 	   
+ 	lw ra, 0(sp)		  # 恢復參數的值
+ 	lw t5, 4(sp)		  # 恢復返回地址
+ 	addi sp,sp,8		 # 讓 sp 指向上 stack
+ 	jalr ra                      #ra 回傳位址的暫存器
+ 	                          #在被跳躍位址處回傳時取得這個回傳位址並跳回
+ # 10<n<=20
+LOOP4:                  
+	addi sp, sp, -8		  # 分配 8 bytes to stack
+ 	sw ra, 0(sp)		  # 將返回地址保存在 stack中
+ 	sw t5, 4(sp)		  # 將參數值保存在 stack 中
+ 	 	
+ 	addi t5,t5,-2
+ 	jal ra, ALL                # return f(n-2)
+ 	
+ 	addi t5,t5,-1              #-1-2=-3
+ 	jal ra, ALL                # return f(n-3)
+ 	
+ 	lw ra, 0(sp)		  # 恢復參數的值
+ 	lw t5, 4(sp)		  # 恢復返回地址
+ 	addi sp,sp,8		 # 讓 sp 指向上 stack
+ 	jalr ra                      #ra 回傳位址的暫存器
+ 	                          #在被跳躍位址處回傳時取得這個回傳位址並跳回
+ 
+ # n>20
+LOOP5:                     
+	addi sp, sp, -8		  # 分配 8 bytes to stack
+ 	sw ra, 0(sp)		  # 將返回地址保存在 stack中
+ 	sw t5, 4(sp)		  # 將參數值保存在 stack 中
+ 	 	
+ 	addi t1,zero,5      
+ 	div t5,t5,t1               # n /= 5
+ 	jal ra, ALL                # f(n/5)
+ 	lw ra, 0(sp)		  # 恢復參數的值
+ 	lw t5, 4(sp)		  # 恢復返回地址
+ 	
+ 	addi t3, zero,  2           # t3 = 2
+	mul  t3, t5, t3             # t3 = n * 2
+	add  t6,t6, t3      
+ 	addi sp,sp,8		 # 讓 sp 指向上 stack
+ 	jalr ra                   #ra 回傳位址的暫存器
+ 	                          #在被跳躍位址處回傳時取得這個回傳位址並跳回
+
+EXIT:
+ 	
+
+
